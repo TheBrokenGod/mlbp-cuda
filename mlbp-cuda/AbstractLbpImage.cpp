@@ -1,8 +1,8 @@
 #include "AbstractLbpImage.h"
 #include <iostream>
 
-AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height) :
-	pixels(pixels),
+AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) :
+	rgbPixels(rgbPixels),
 	width(width),
 	height(height) {
 }
@@ -52,4 +52,3 @@ void AbstractLbpImage::calcImageRegion(float radius, unsigned blockEdge)
 	std::cout << " and " << (width - region.end_pixels.x);
 	std::cout << "x" << (height - region.end_pixels.y) << std::endl;
 }
-

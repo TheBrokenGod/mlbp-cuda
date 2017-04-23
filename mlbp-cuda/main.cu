@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
 	// Process
 	Benchmark::start();
-	image.calculateNormalizedLBPs(RADIUS, BLOCK_EDGE);
+	image.calculateNormalizedLBPs(RADIUS, BLOCK_EDGE, "test-output.png");
 	Benchmark::stop();
 
 	std::cout << Benchmark::getMillis() << "ms elapsed" << std::endl;

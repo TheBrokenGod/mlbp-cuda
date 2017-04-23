@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <string>
 #include "Types.h"
 
 class AbstractLbpImage
@@ -15,12 +16,11 @@ public:
 	virtual float *calculateNormalizedLBPs(float radius, unsigned blockEdge) = 0;
 
 protected:
-	const std::vector<byte>& pixels;
+	const std::vector<byte>& rgbPixels;
 	unsigned width, height;
 	image_region region;
 	std::vector<int_pair> offsets;
-	AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height);
-
+	AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height);
 };
 
 #endif
