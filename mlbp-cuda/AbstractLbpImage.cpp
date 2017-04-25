@@ -4,7 +4,8 @@
 AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) :
 	rgbPixels(rgbPixels),
 	width(width),
-	height(height) {
+	height(height),
+	numSamples(0) {
 }
 
 AbstractLbpImage::~AbstractLbpImage() {
@@ -33,6 +34,7 @@ void AbstractLbpImage::calcSamplingOffsets(float radius, unsigned samples)
 		// TODO
 		std::cout << "sample at " << offsets[sample].y << " ; " << offsets[sample].x << std::endl;
 	}
+	numSamples = offsets.size();
 }
 
 void AbstractLbpImage::calcImageRegion(float radius, unsigned blockEdge)

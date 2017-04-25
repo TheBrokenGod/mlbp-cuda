@@ -1,5 +1,6 @@
 #include "LbpImageCpu.h"
 #include <iostream>
+#include <stdexcept>
 #include "lodepng.h"
 
 LbpImageCpu::LbpImageCpu(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) : AbstractLbpImage(rgbPixels, width, height) {
@@ -30,7 +31,7 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 	unsigned result = 0;
 
 	// Compare with each neighbor
-	for(int i = 0; i < offsets.size(); i++)
+	for(int i = 0; i < numSamples; i++)
 	{
 		unsigned nrow = row + offsets[i].y;
 		unsigned ncol = col + offsets[i].x;
@@ -38,7 +39,7 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 
 		// Write one if lower
 		if(pixel < neighbor) {
-			int shift = offsets.size() - 1 - i;
+			int shift = numSamples - 1 - i;
 			result = result | (0x1 << shift);
 		}
 	}
@@ -53,6 +54,19 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge)
 
 float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, std::string visualOutput)
 {
+	// Will hold all the image's histograms
+	unsigned long size = pow(2, numSamples) * region.grid_size.x * region.grid_size.y;
+	float *histograms;
+	try {
+		histograms = new float[size];
+		std::cout << "new float[" << size << "]" << std::endl;
+	}
+	catch(const std::bad_alloc& e) {
+		std::cerr << "new float[" << size << "] allocation failed" << std::endl;
+		return nullptr;
+	}
+
+	// Visual output if requested
 	std::vector<byte> output;
 	unsigned outputWidth;
 	unsigned outputHeight;
@@ -68,7 +82,7 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, st
 		{
 			unsigned result = compareWithNeighborhood(i, j);
 			if(visualOutput.size() > 0) {
-				byte check = (byte)roundf(result * powf(2.f, 8 - offsets.size()));
+				byte check = (byte)roundf(result / powf(2.f, numSamples - 8));
 				output.push_back(check);
 			}
 		}
@@ -76,7 +90,7 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, st
 
 	if(visualOutput.size() > 0) {
 		lodepng::encode(visualOutput, output, outputWidth, outputHeight, LCT_GREY);
+		std::cout << output.size() << " output pixels" << std::endl;
 	}
-	std::cout << output.size() << std::endl;
-	return nullptr;
+	return histograms;
 }

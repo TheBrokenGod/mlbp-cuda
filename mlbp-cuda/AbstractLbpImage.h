@@ -20,6 +20,7 @@ protected:
 	unsigned width, height;
 	image_region region;
 	std::vector<int_pair> offsets;
+	unsigned numSamples;
 	AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height);
 };
 
