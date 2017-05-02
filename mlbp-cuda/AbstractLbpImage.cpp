@@ -1,14 +1,28 @@
 #include "AbstractLbpImage.h"
 #include <iostream>
 
-AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) :
-	rgbPixels(rgbPixels),
+AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbaPixels, unsigned width, unsigned height) :
+	pixels(toGrayscale(rgbaPixels)),
 	width(width),
 	height(height),
 	numSamples(0) {
 }
 
 AbstractLbpImage::~AbstractLbpImage() {
+}
+
+std::vector<byte> AbstractLbpImage::toGrayscale(const std::vector<byte>& rgbaPixels)
+{
+	std::vector<byte> pixels;
+	pixels.reserve(rgbaPixels.size() / 4);
+
+	for(int i = 0; i < rgbaPixels.size(); i += 4)
+	{
+		byte gray = (byte)round((rgbaPixels[i] + rgbaPixels[i+1] + rgbaPixels[i+2]) / 3.f);
+		pixels.push_back(gray);
+	}
+
+	return pixels;
 }
 
 bool AbstractLbpImage::checkMinimumSize(float radius, unsigned blockEdge)
@@ -40,6 +54,7 @@ void AbstractLbpImage::calcSamplingOffsets(float radius, unsigned samples)
 void AbstractLbpImage::calcImageRegion(float radius, unsigned blockEdge)
 {
 	int radiusInt = (int)round(radius);
+
 	// Define the processed sub-region of the image
 	region.gaps_pixel.y = (2 * radiusInt + (height - 2 * radiusInt) % 16) / 2;
 	region.gaps_pixel.x = (2 * radiusInt + (width - 2 * radiusInt) % 16) / 2;

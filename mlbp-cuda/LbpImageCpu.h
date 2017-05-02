@@ -12,10 +12,11 @@ public:
 	float *calculateNormalizedLBPs(float radius, unsigned blockEdge, std::string visualOutput);
 
 private:
-	std::vector<byte> pixels;
+	float *histograms;
 	byte pixelAt(unsigned row, unsigned col);
 	unsigned compareWithNeighborhood(unsigned row, unsigned col);
-	void toGrayscale();
+	void allocateHistograms();
+	float *getHistogram(unsigned row, unsigned col, unsigned blockEdge);
 };
 
 #endif

@@ -3,21 +3,11 @@
 #include <stdexcept>
 #include "lodepng.h"
 
-LbpImageCpu::LbpImageCpu(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) : AbstractLbpImage(rgbPixels, width, height) {
-	toGrayscale();
+LbpImageCpu::LbpImageCpu(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) : AbstractLbpImage(rgbPixels, width, height),
+	histograms(nullptr) {
 }
 
 LbpImageCpu::~LbpImageCpu() {
-}
-
-void LbpImageCpu::toGrayscale()
-{
-	pixels.reserve(rgbPixels.size() / 4);
-	for(int i = 0; i < rgbPixels.size(); i += 4)
-	{
-		byte gray = (byte)round((rgbPixels[i] + rgbPixels[i+1] + rgbPixels[i+2]) / 3.f);
-		pixels.push_back(gray);
-	}
 }
 
 byte LbpImageCpu::pixelAt(unsigned row, unsigned col)
@@ -47,6 +37,29 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 	return result;
 }
 
+void LbpImageCpu::allocateHistograms()
+{
+	long size = pow(2, numSamples) * region.grid_size.x * region.grid_size.y;
+	try {
+		histograms = new float[size];
+		std::fill_n(histograms, size, 0.f);
+	}
+	catch(const std::bad_alloc& e) {
+		std::cerr << "new float[" << size << "] allocation failed" << std::endl;
+		throw e;
+	}
+}
+
+float *LbpImageCpu::getHistogram(unsigned row, unsigned col, unsigned blockEdge)
+{
+	// Each pixel block has its histogram
+	int_pair block;
+	block.y = (row - region.gaps_pixel.y) / blockEdge;
+	block.x = (col - region.gaps_pixel.x) / blockEdge;
+	size_t offset = pow(2, numSamples) * (block.y * region.grid_size.x + block.x);
+	return (histograms + offset);
+}
+
 float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge)
 {
 	return calculateNormalizedLBPs(radius, blockEdge, "");
@@ -54,17 +67,7 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge)
 
 float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, std::string visualOutput)
 {
-	// Will hold all the image's histograms
-	unsigned long size = pow(2, numSamples) * region.grid_size.x * region.grid_size.y;
-	float *histograms;
-	try {
-		histograms = new float[size];
-		std::cout << "new float[" << size << "]" << std::endl;
-	}
-	catch(const std::bad_alloc& e) {
-		std::cerr << "new float[" << size << "] allocation failed" << std::endl;
-		return nullptr;
-	}
+	allocateHistograms();
 
 	// Visual output if requested
 	std::vector<byte> output;
@@ -73,18 +76,22 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, st
 	if(visualOutput.size() > 0) {
 		outputWidth = region.grid_size.x * blockEdge;
 		outputHeight = region.grid_size.y * blockEdge;
-		output.reserve(4 * outputWidth * outputHeight);
+		output.reserve(outputWidth * outputHeight);
 	}
 
 	for(int i = region.gaps_pixel.y; i < region.end_pixels.y; i++)
 	{
 		for(int j = region.gaps_pixel.x; j < region.end_pixels.x; j++)
 		{
-			unsigned result = compareWithNeighborhood(i, j);
+			float *histogram = getHistogram(i, j, blockEdge);
+			unsigned pattern = compareWithNeighborhood(i, j);
+
 			if(visualOutput.size() > 0) {
-				byte check = (byte)roundf(result / powf(2.f, numSamples - 8));
-				output.push_back(check);
+				float check = pattern / powf(2.f, numSamples - 8.f);
+				output.push_back((byte)roundf(check));
 			}
+
+			histogram[pattern] += 1;
 		}
 	}
 

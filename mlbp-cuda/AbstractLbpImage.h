@@ -16,12 +16,15 @@ public:
 	virtual float *calculateNormalizedLBPs(float radius, unsigned blockEdge) = 0;
 
 protected:
-	const std::vector<byte>& rgbPixels;
+	std::vector<byte> pixels;
 	unsigned width, height;
 	image_region region;
 	std::vector<int_pair> offsets;
 	unsigned numSamples;
+
+protected:
 	AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height);
+	virtual std::vector<byte> toGrayscale(const std::vector<byte>& rgbPixels);
 };
 
 #endif
