@@ -15,6 +15,8 @@ private:
 	float *histograms;
 	byte pixelAt(unsigned row, unsigned col);
 	unsigned compareWithNeighborhood(unsigned row, unsigned col);
+	long getHistogramLength();
+	long getNumberHistograms();
 	void allocateHistograms();
 	float *getHistogram(unsigned row, unsigned col, unsigned blockEdge);
 };

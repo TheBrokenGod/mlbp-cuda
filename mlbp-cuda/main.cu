@@ -7,7 +7,7 @@
 
 #define BLOCK_EDGE 	16
 #define RADIUS		1.0
-#define SAMPLES		2
+#define SAMPLES		4
 #define BLOCK_SIZE 	(BLOCK_EDGE*BLOCK_EDGE)
 
 static std::vector<byte> pixels;
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
 	// Process
 	Benchmark::start();
-	delete [] image.calculateNormalizedLBPs(RADIUS, BLOCK_EDGE, "test-output.png");
+	delete [] image.calculateNormalizedLBPs(RADIUS, BLOCK_EDGE, "test-output");
 	Benchmark::stop();
 
 	std::cout << Benchmark::getMillis() << "ms elapsed" << std::endl;
