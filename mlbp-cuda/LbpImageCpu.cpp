@@ -5,8 +5,7 @@
 #include <iomanip>
 #include "lodepng.h"
 
-LbpImageCpu::LbpImageCpu(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) : AbstractLbpImage(rgbPixels, width, height),
-	histograms(nullptr) {
+LbpImageCpu::LbpImageCpu(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) : AbstractLbpImage(rgbPixels, width, height) {
 }
 
 LbpImageCpu::~LbpImageCpu() {
@@ -23,7 +22,7 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 	unsigned result = 0;
 
 	// Compare with each neighbor
-	for(int i = 0; i < numSamples; i++)
+	for(int i = 0; i < samples; i++)
 	{
 		unsigned nrow = row + offsets[i].y;
 		unsigned ncol = col + offsets[i].x;
@@ -31,7 +30,7 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 
 		// Write one if lower
 		if(pixel < neighbor) {
-			int shift = numSamples - 1 - i;
+			int shift = samples - 1 - i;
 			result = result | (0x1 << shift);
 		}
 	}
@@ -40,7 +39,7 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 }
 
 long LbpImageCpu::getHistogramLength() {
-	return pow(2, numSamples);
+	return pow(2, samples);
 }
 
 long LbpImageCpu::getNumberHistograms()
@@ -61,7 +60,7 @@ void LbpImageCpu::allocateHistograms()
 	std::fill_n(histograms, size, 0.f);
 }
 
-float *LbpImageCpu::getHistogram(unsigned row, unsigned col, unsigned blockEdge)
+float *LbpImageCpu::getHistogram(unsigned row, unsigned col)
 {
 	// Each pixel block has its own histogram
 	int_pair block;
@@ -71,12 +70,12 @@ float *LbpImageCpu::getHistogram(unsigned row, unsigned col, unsigned blockEdge)
 	return (histograms + offset);
 }
 
-float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge)
+float *LbpImageCpu::calculateNormalizedLBPs()
 {
-	return calculateNormalizedLBPs(radius, blockEdge, "");
+	return calculateNormalizedLBPs("");
 }
 
-float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, std::string visualOutput)
+float *LbpImageCpu::calculateNormalizedLBPs(const std::string& outputFilesName)
 {
 	allocateHistograms();
 
@@ -84,7 +83,7 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, st
 	std::vector<byte> output;
 	unsigned outputWidth;
 	unsigned outputHeight;
-	if(visualOutput.size() > 0) {
+	if(outputFilesName.size() > 0) {
 		outputWidth = region.grid_size.x * blockEdge;
 		outputHeight = region.grid_size.y * blockEdge;
 		output.reserve(outputWidth * outputHeight);
@@ -95,11 +94,11 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, st
 	{
 		for(int j = region.gaps_pixel.x; j < region.end_pixels.x; j++)
 		{
-			float *histogram = getHistogram(i, j, blockEdge);
+			float *histogram = getHistogram(i, j);
 			unsigned pattern = compareWithNeighborhood(i, j);
 
-			if(visualOutput.size() > 0) {
-				float check = pattern / powf(2.f, numSamples - 8.f);
+			if(outputFilesName.size() > 0) {
+				float check = pattern / powf(2.f, samples - 8.f);
 				output.push_back((byte)roundf(check));
 			}
 
@@ -114,14 +113,14 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned blockEdge, st
 		histograms[i] /= (blockEdge * blockEdge);
 	}
 
-	if(visualOutput.size() > 0) {
+	if(outputFilesName.size() > 0) {
 		// Save check image
-		lodepng::encode(visualOutput + ".png", output, outputWidth, outputHeight, LCT_GREY);
+		lodepng::encode(outputFilesName + ".png", output, outputWidth, outputHeight, LCT_GREY);
 		std::cout << output.size() << " output pixels" << std::endl;
 
 		// Save histograms to text file
-		std::ofstream file(visualOutput + ".lbp");
-		file << std::fixed << std::setprecision(3);
+		std::ofstream file(outputFilesName + ".lbp");
+		file << std::fixed << std::setprecision(4);
 		for(int i = 0; i < getNumberHistograms(); i++)
 		{
 			float *histogram = (histograms + i * getHistogramLength());

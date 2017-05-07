@@ -8,17 +8,16 @@ class LbpImageCpu : public AbstractLbpImage
 public:
 	LbpImageCpu(const std::vector<byte>& pixels, unsigned width, unsigned height);
 	~LbpImageCpu();
-	float *calculateNormalizedLBPs(float radius, unsigned blockEdge);
-	float *calculateNormalizedLBPs(float radius, unsigned blockEdge, std::string visualOutput);
+	float *calculateNormalizedLBPs();
+	float *calculateNormalizedLBPs(const std::string& outputFilesName);
 
 private:
-	float *histograms;
 	byte pixelAt(unsigned row, unsigned col);
 	unsigned compareWithNeighborhood(unsigned row, unsigned col);
 	long getHistogramLength();
 	long getNumberHistograms();
 	void allocateHistograms();
-	float *getHistogram(unsigned row, unsigned col, unsigned blockEdge);
+	float *getHistogram(unsigned row, unsigned col);
 };
 
 #endif

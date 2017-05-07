@@ -10,21 +10,27 @@ class AbstractLbpImage
 {
 public:
 	virtual ~AbstractLbpImage();
-	bool checkMinimumSize(float radius, unsigned blockEdge);
-	void calcSamplingOffsets(float radius, unsigned samples);
-	void calcImageRegion(float radius, unsigned blockEdge);
-	virtual float *calculateNormalizedLBPs(float radius, unsigned blockEdge) = 0;
+	void prepare(float radius, unsigned samples, unsigned blockEdge);
+	virtual float *calculateNormalizedLBPs() = 0;
 
 protected:
 	std::vector<byte> pixels;
 	unsigned width, height;
+	float radius;
+	unsigned samples;
+	unsigned blockEdge;
 	image_region region;
 	std::vector<int_pair> offsets;
-	unsigned numSamples;
+	float *histograms;
 
 protected:
 	AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height);
-	virtual std::vector<byte> toGrayscale(const std::vector<byte>& rgbPixels);
+	virtual std::vector<byte> toGrayscale(const std::vector<byte>& rgbaPixels);
+
+private:
+	bool checkMinimumSize();
+	void calcSamplingOffsets();
+	void calcImageRegion();
 };
 
 #endif

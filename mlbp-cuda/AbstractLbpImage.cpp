@@ -5,7 +5,10 @@ AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbaPixels, unsigned
 	pixels(toGrayscale(rgbaPixels)),
 	width(width),
 	height(height),
-	numSamples(0) {
+	radius(0.f),
+	samples(0),
+	blockEdge(0),
+	histograms(nullptr) {
 }
 
 AbstractLbpImage::~AbstractLbpImage() {
@@ -25,7 +28,20 @@ std::vector<byte> AbstractLbpImage::toGrayscale(const std::vector<byte>& rgbaPix
 	return pixels;
 }
 
-bool AbstractLbpImage::checkMinimumSize(float radius, unsigned blockEdge)
+void AbstractLbpImage::prepare(float radius, unsigned samples, unsigned blockEdge)
+{
+	this->radius = radius;
+	this->samples = samples;
+	this->blockEdge = blockEdge;
+
+	if(!checkMinimumSize()) {
+		throw new std::invalid_argument("The image is too small");
+	}
+	calcSamplingOffsets();
+	calcImageRegion();
+}
+
+bool AbstractLbpImage::checkMinimumSize()
 {
 	int minSize = 2 * ((int)round(radius)) + blockEdge;
 
@@ -35,7 +51,7 @@ bool AbstractLbpImage::checkMinimumSize(float radius, unsigned blockEdge)
 	return false;
 }
 
-void AbstractLbpImage::calcSamplingOffsets(float radius, unsigned samples)
+void AbstractLbpImage::calcSamplingOffsets()
 {
 	// Loop the unit circle clockwise
 	float angle = 2 * M_PI / samples;
@@ -48,16 +64,16 @@ void AbstractLbpImage::calcSamplingOffsets(float radius, unsigned samples)
 		// TODO
 		std::cout << "sample at " << offsets[sample].y << " ; " << offsets[sample].x << std::endl;
 	}
-	numSamples = offsets.size();
+	samples = offsets.size();
 }
 
-void AbstractLbpImage::calcImageRegion(float radius, unsigned blockEdge)
+void AbstractLbpImage::calcImageRegion()
 {
 	int radiusInt = (int)round(radius);
 
 	// Define the processed sub-region of the image
-	region.gaps_pixel.y = (2 * radiusInt + (height - 2 * radiusInt) % 16) / 2;
-	region.gaps_pixel.x = (2 * radiusInt + (width - 2 * radiusInt) % 16) / 2;
+	region.gaps_pixel.y = (2 * radiusInt + (height - 2 * radiusInt) % blockEdge) / 2;
+	region.gaps_pixel.x = (2 * radiusInt + (width - 2 * radiusInt) % blockEdge) / 2;
 	region.grid_size.y  = (height - 2 * radiusInt) / blockEdge;
 	region.grid_size.x  = (width - 2 * radiusInt) / blockEdge;
 	region.end_pixels.y = region.gaps_pixel.y + region.grid_size.y * blockEdge;

@@ -5,10 +5,9 @@
 #include "LbpImageCpu.h"
 #include "Benchmark.h"
 
-#define BLOCK_EDGE 	16
+#define BLOCK_EDGE 	64
 #define RADIUS		1.0
 #define SAMPLES		4
-#define BLOCK_SIZE 	(BLOCK_EDGE*BLOCK_EDGE)
 
 static std::vector<byte> pixels;
 static unsigned width;
@@ -35,17 +34,12 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	LbpImageCpu image(pixels, width, height);
-	if(!image.checkMinimumSize(RADIUS, BLOCK_EDGE)) {
-		std::cerr << "The image is too small" << std::endl;
-		return 1;
-	}
-	// Prepare
-	image.calcSamplingOffsets(RADIUS, SAMPLES);
-	image.calcImageRegion(RADIUS, BLOCK_EDGE);
+	pixels.clear();
+	image.prepare(RADIUS, SAMPLES, BLOCK_EDGE);
 
 	// Process
 	Benchmark::start();
-	delete [] image.calculateNormalizedLBPs(RADIUS, BLOCK_EDGE, "test-output");
+	delete [] image.calculateNormalizedLBPs("test-output");
 	Benchmark::stop();
 
 	std::cout << Benchmark::getMillis() << "ms elapsed" << std::endl;
