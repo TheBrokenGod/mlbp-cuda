@@ -1,8 +1,9 @@
 #include "AbstractLbpImage.h"
 #include <iostream>
+#include <stdexcept>
 
-AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbaPixels, unsigned width, unsigned height) :
-	pixels(toGrayscale(rgbaPixels)),
+AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height) :
+	pixels(toGrayscale(pixels, width, height)),
 	width(width),
 	height(height),
 	radius(0.f),
@@ -14,18 +15,31 @@ AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& rgbaPixels, unsigned
 AbstractLbpImage::~AbstractLbpImage() {
 }
 
-std::vector<byte> AbstractLbpImage::toGrayscale(const std::vector<byte>& rgbaPixels)
+std::vector<byte> AbstractLbpImage::toGrayscale(const std::vector<byte>& pixels, unsigned width, unsigned height)
 {
-	std::vector<byte> pixels;
-	pixels.reserve(rgbaPixels.size() / 4);
+	int channels;
+	if(pixels.size() == width * height) {
+		return pixels;
+	}
+	else if(pixels.size() == 3 * width * height) {
+		channels = 3;
+	}
+	else if(pixels.size() == 4 * width * height) {
+		channels = 4;
+	}
+	else {
+		throw std::invalid_argument("Not a 1, 3 or 4 (of 1 byte) channels image");
+	}
+	std::vector<byte> grayPixels;
+	grayPixels.reserve(pixels.size() / channels);
 
-	for(int i = 0; i < rgbaPixels.size(); i += 4)
+	for(int i = 0; i < pixels.size(); i += channels)
 	{
-		byte gray = (byte)round((rgbaPixels[i] + rgbaPixels[i+1] + rgbaPixels[i+2]) / 3.f);
-		pixels.push_back(gray);
+		byte gray = (byte)round((pixels[i] + pixels[i+1] + pixels[i+2]) / 3.f);
+		grayPixels.push_back(gray);
 	}
 
-	return pixels;
+	return grayPixels;
 }
 
 void AbstractLbpImage::prepare(float radius, unsigned samples, unsigned blockEdge)

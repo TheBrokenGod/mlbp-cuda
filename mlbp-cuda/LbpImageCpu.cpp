@@ -5,7 +5,8 @@
 #include <iomanip>
 #include "lodepng.h"
 
-LbpImageCpu::LbpImageCpu(const std::vector<byte>& rgbPixels, unsigned width, unsigned height) : AbstractLbpImage(rgbPixels, width, height) {
+LbpImageCpu::LbpImageCpu(const std::vector<byte>& pixels, unsigned width, unsigned height) :
+	AbstractLbpImage(pixels, width, height) {
 }
 
 LbpImageCpu::~LbpImageCpu() {

@@ -3,11 +3,12 @@
 #include <chrono>
 #include "lodepng.h"
 #include "LbpImageCpu.h"
+#include "LbpImageCuda.h"
 #include "Benchmark.h"
 
 #define BLOCK_EDGE 	64
-#define RADIUS		1.0
-#define SAMPLES		4
+#define RADIUS		3.0
+#define SAMPLES		12
 
 static std::vector<byte> pixels;
 static unsigned width;
@@ -21,6 +22,7 @@ static bool loadImage(const std::string& filename)
 		return false;
 	}
 	std::cout << "image size is " << width << "x" << height << std::endl;
+	pixels.push_back(0xff);
 	return true;
 }
 
@@ -33,6 +35,8 @@ int main(int argc, char **argv) {
 	if(!loadImage(argv[1])) {
 		return 1;
 	}
+	LbpImageCuda d_Image(pixels, width, height);
+
 	LbpImageCpu image(pixels, width, height);
 	pixels.clear();
 	image.prepare(RADIUS, SAMPLES, BLOCK_EDGE);

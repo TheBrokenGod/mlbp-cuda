@@ -13,6 +13,4 @@ typedef struct {
 	int_pair end_pixels;
 } image_region;
 
-
-
 #endif

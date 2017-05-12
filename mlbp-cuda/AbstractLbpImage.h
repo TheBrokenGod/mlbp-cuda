@@ -24,13 +24,13 @@ protected:
 	float *histograms;
 
 protected:
-	AbstractLbpImage(const std::vector<byte>& rgbPixels, unsigned width, unsigned height);
-	virtual std::vector<byte> toGrayscale(const std::vector<byte>& rgbaPixels);
+	AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height);
 
 private:
 	bool checkMinimumSize();
 	void calcSamplingOffsets();
 	void calcImageRegion();
+	static std::vector<byte> toGrayscale(const std::vector<byte>& pixels, unsigned width, unsigned height);
 };
 
 #endif
