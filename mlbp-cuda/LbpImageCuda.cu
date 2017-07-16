@@ -115,11 +115,11 @@ float *LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, uns
 	}
 
 	// Calculate CUDA grids
+	dim3 lbpGridSize, lbpBlockSize;
 	dim3 histGridSize, histBlockSize;
 	unsigned remainder;
-	calcHistDim(histGridSize, histBlockSize, remainder);
-	dim3 lbpGridSize = {(unsigned)region.grid_size.x, (unsigned)region.grid_size.y};
-	dim3 lbpBlockSize = {blockEdge, blockEdge};
+	calcLbpGridAndBlockSize(lbpGridSize, lbpBlockSize);
+	calcHistGridAndBlockSize(histGridSize, histBlockSize, remainder);
 
 	// Compute histrograms
 	writeZeroIntoHistograms<<< histGridSize, histBlockSize >>>(
@@ -150,22 +150,15 @@ float *LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, uns
 	return histograms;
 }
 
-void LbpImageCuda::calcHistDim(dim3& grid, dim3& block, unsigned& remainder)
+void LbpImageCuda::calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& remainder)
 {
 	int device;
 	cudaGetDevice(&device);
 	struct cudaDeviceProp props;
 	cudaGetDeviceProperties(&props, device);
 
-	// Ensure maximum block size is respected
-	if(blockEdge * blockEdge > props.maxThreadsPerBlock) {
-		std::cerr << "Maximum block edge on this device is " << std::sqrt(props.maxThreadsPerBlock) << std::endl;
-		throw std::invalid_argument("");
-	}
-
 	// Histograms will be covered by maximum-sized blocks
 	auto numFloats = getHistogramsSizeInBytes() / sizeof(float);
-	std::cout << "numFloat is " << numFloats << std::endl;
 	auto numBlocks = numFloats / props.maxThreadsPerBlock;
 	remainder = numFloats % props.maxThreadsPerBlock;
 	if(remainder > 0) {
@@ -179,4 +172,26 @@ void LbpImageCuda::calcHistDim(dim3& grid, dim3& block, unsigned& remainder)
 	}
 	grid = {(unsigned)numBlocks};
 	block = {(unsigned)props.maxThreadsPerBlock};
+}
+
+void LbpImageCuda::calcLbpGridAndBlockSize(dim3& grid, dim3& block)
+{
+	int device;
+	cudaGetDevice(&device);
+	struct cudaDeviceProp props;
+	cudaGetDeviceProperties(&props, device);
+
+	// Ensure maximum sizes are respected
+	if(blockEdge * blockEdge > props.maxThreadsPerBlock) {
+		std::cerr << "Maximum block edge on this device is " << std::sqrt(props.maxThreadsPerBlock) << std::endl;
+		throw std::invalid_argument("");
+	}
+	if(region.grid_size.x > props.maxGridSize[0] || region.grid_size.y > props.maxGridSize[1]) {
+		std::cerr << "Maximum grid size on this device is " << props.maxGridSize[0] << "x" << props.maxGridSize[1] << std::endl;
+		throw std::invalid_argument("");
+	}
+
+	// Same as CPU implementation
+	grid = {(unsigned)region.grid_size.x, (unsigned)region.grid_size.y};
+	block = {blockEdge, blockEdge};
 }

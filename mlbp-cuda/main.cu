@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
 }
 
 static void testAndBenchmark() {
-	int samp[] = {4, 5, 8, 10, 12, 15};
-	float rads[] = {1.0, 1.51, 1.0, 2.0, 3.0, 4.0};
+	int samp[] = {4, 6, 8, 10, 12, 15};
+	float rads[] = {1.0, 1.75, 1.0, 2.0, 3.0, 4.0};
 	int edge[] = {8, 10, 16, 16, 32, 32};
 
 	for(int i = 0; i < 6; i++)
@@ -59,7 +59,7 @@ static void testAndBenchmark() {
 		Benchmark::stop();
 		long gpuMillis = Benchmark::getMillis();
 		std::cerr << "With conf {r=" << rads[i] << ";s=" << samp[i] << ";e=" << edge[i] << "} ";
-		std::cerr << "CPU took " << cpuMillis << "ms and GPU " << gpuMillis << "ms" << std::endl;
+		std::cerr << "CPU took " << cpuMillis << "ms and GPU " << gpuMillis << "ms";
 
 		// Test against output correctness
 		long limit = image.getNumberHistograms() * image.getHistogramLength();
@@ -72,6 +72,6 @@ static void testAndBenchmark() {
 			}
 		}
 		delete histograms1, histograms2;
-		std::cerr << "Test finished OK" << std::endl;
+		std::cerr << " - Test finished OK" << std::endl;
 	}
 }

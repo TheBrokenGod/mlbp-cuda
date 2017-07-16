@@ -13,7 +13,8 @@ public:
 private:
 	byte *d_pixels;
 	int_pair *d_offsets;
-	void calcHistDim(dim3& grid, dim3& block, unsigned& remainder);
+	void calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& remainder);
+	void calcLbpGridAndBlockSize(dim3& grid, dim3& block);
 };
 
 #endif
