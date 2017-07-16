@@ -53,6 +53,7 @@ void AbstractLbpImage::prepare(float radius, unsigned samples, unsigned blockEdg
 	}
 	calcSamplingOffsets();
 	calcImageRegion();
+	allocateHistograms();
 }
 
 bool AbstractLbpImage::checkMinimumSize()
@@ -98,4 +99,32 @@ void AbstractLbpImage::calcImageRegion()
 	std::cout << " with gaps " << region.gaps_pixel.x << "x" << region.gaps_pixel.y;
 	std::cout << " and " << (width - region.end_pixels.x);
 	std::cout << "x" << (height - region.end_pixels.y) << std::endl;
+}
+
+long AbstractLbpImage::getHistogramLength()
+{
+	return pow(2, samples);
+}
+
+long AbstractLbpImage::getNumberHistograms()
+{
+	return region.grid_size.x * region.grid_size.y;
+}
+
+void AbstractLbpImage::allocateHistograms()
+{
+	long size = getHistogramLength() * getNumberHistograms();
+	try {
+		histograms = new float[size];
+	}
+	catch(const std::bad_alloc& e) {
+		std::cerr << "new float[" << size << "] allocation failed" << std::endl;
+		throw e;
+	}
+	std::fill_n(histograms, size, 0.f);
+}
+
+long AbstractLbpImage::getHistogramsSizeInBytes()
+{
+	return sizeof(float) * getHistogramLength() * getNumberHistograms();
 }

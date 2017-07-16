@@ -10,8 +10,9 @@ class AbstractLbpImage
 {
 public:
 	virtual ~AbstractLbpImage();
-	void prepare(float radius, unsigned samples, unsigned blockEdge);
-	virtual float *calculateNormalizedLBPs() = 0;
+	virtual float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge) = 0;
+	long getHistogramLength();
+	long getNumberHistograms();
 
 protected:
 	std::vector<byte> pixels;
@@ -25,6 +26,9 @@ protected:
 
 protected:
 	AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height);
+	void prepare(float radius, unsigned samples, unsigned blockEdge);
+	void allocateHistograms();
+	long getHistogramsSizeInBytes();
 
 private:
 	bool checkMinimumSize();
