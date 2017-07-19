@@ -68,15 +68,16 @@ bool AbstractLbpImage::checkMinimumSize()
 
 void AbstractLbpImage::calcSamplingOffsets()
 {
-	// Loop the unit circle clockwise
+	this->offsets.clear();
 	float angle = 2 * M_PI / samples;
+
+	// Loop the unit circle clockwise
 	for(int sample = 0; sample < samples; sample++)
 	{
 		offsets.push_back({0, 0});
 		offsets[sample].y = (-1) * (int)round(radius * cos(sample * angle));
 		offsets[sample].x = (+1) * (int)round(radius * sin(sample * angle));
 	}
-	samples = offsets.size();
 }
 
 void AbstractLbpImage::calcImageRegion()
@@ -108,7 +109,6 @@ void AbstractLbpImage::allocateHistograms()
 		histograms = new float[size];
 	}
 	catch(const std::bad_alloc& e) {
-		std::cerr << "new float[" << size << "] allocation failed" << std::endl;
 		throw e;
 	}
 	std::fill_n(histograms, size, 0.f);

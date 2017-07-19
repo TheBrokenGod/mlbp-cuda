@@ -39,7 +39,7 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 	return result;
 }
 
-float *LbpImageCpu::getHistogram(unsigned row, unsigned col)
+float *LbpImageCpu::getHistogram(float *histograms, unsigned row, unsigned col)
 {
 	// Each pixel block has its own histogram
 	int_pair block;
@@ -72,7 +72,7 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsi
 	{
 		for(int j = region.gaps_pixel.x; j < region.end_pixels.x; j++)
 		{
-			float *histogram = getHistogram(i, j);
+			float *histogram = getHistogram(histograms, i, j);
 			unsigned pattern = compareWithNeighborhood(i, j);
 
 			if(outputFileName.size() > 0) {
@@ -97,7 +97,6 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsi
 	if(outputFileName.size() > 0) {
 		// Save check image
 		lodepng::encode(outputFileName + ".png", output, outputWidth, outputHeight, LCT_GREY);
-		std::cout << output.size() << " output pixels" << std::endl;
 
 		// Save histograms to text file
 		std::ofstream file(outputFileName + ".lbp");

@@ -27,14 +27,14 @@ protected:
 protected:
 	AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height);
 	void prepare(float radius, unsigned samples, unsigned blockEdge);
-	void allocateHistograms();
 	long getHistogramsSizeInBytes();
 
 private:
+	static std::vector<byte> toGrayscale(const std::vector<byte>& pixels, unsigned width, unsigned height);
 	bool checkMinimumSize();
 	void calcSamplingOffsets();
 	void calcImageRegion();
-	static std::vector<byte> toGrayscale(const std::vector<byte>& pixels, unsigned width, unsigned height);
+	void allocateHistograms();
 };
 
 #endif

@@ -14,7 +14,7 @@ public:
 private:
 	byte pixelAt(unsigned row, unsigned col);
 	unsigned compareWithNeighborhood(unsigned row, unsigned col);
-	float *getHistogram(unsigned row, unsigned col);
+	float *getHistogram(float *histograms, unsigned row, unsigned col);
 };
 
 #endif
