@@ -10,9 +10,24 @@ class AbstractLbpImage
 {
 public:
 	virtual ~AbstractLbpImage();
+	/**
+	 * Perform the LBP computation
+	 *
+	 * The returned array should be deleted with 'delete []' by the caller.
+	 */
 	virtual float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge) = 0;
+	/**
+	 * Return the number of floats in one histogram
+	 */
 	long getHistogramLength();
+	/**
+	 * Return the number of histograms which is grid.x * grid.y
+	 */
 	long getNumberHistograms();
+	/**
+	 * Save the histograms to a text file; one histogram per row.
+	 */
+	static void saveHistogramsToFile(float *histograms, long histLength, long numHists, const std::string& filename);
 
 protected:
 	std::vector<byte> pixels;

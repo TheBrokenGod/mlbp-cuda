@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdint>
 #include <exception>
+#include <string>
 
 LbpImageCuda::LbpImageCuda(const std::vector<byte>& pixels, unsigned width, unsigned height) :
 	AbstractLbpImage(pixels, width, height),
@@ -36,14 +37,6 @@ __device__ bool isThreadInBounds(unsigned remainder) {
 
 __device__ long getGlobalIndex() {
 	return threadIdx.x + blockIdx.x * blockDim.x;
-}
-
-__global__ void writeZeroIntoHistograms(float *histograms, unsigned lastBlockRemainder)
-{
-	if(!isThreadInBounds(lastBlockRemainder)) {
-		return;
-	}
-	histograms[getGlobalIndex()] = 0.f;
 }
 
 __device__ float *getHistogram(float *histograms, unsigned row, unsigned col, unsigned histogramLength, unsigned blockEdge)
@@ -80,6 +73,14 @@ __device__ unsigned compareWithNeighborhood(byte *pixels, int_pair gaps_pixels, 
 	return result;
 }
 
+__global__ void writeZeroIntoHistograms(float *histograms, unsigned lastBlockRemainder)
+{
+	if(!isThreadInBounds(lastBlockRemainder)) {
+		return;
+	}
+	histograms[getGlobalIndex()] = 0.f;
+}
+
 __global__ void computeLBPs(byte *pixels, int_pair gaps_pixels, unsigned width, float *histograms, unsigned histogramLength, unsigned numberHistograms, unsigned samples, unsigned blockEdge, int_pair *offsets)
 {
 	unsigned row = threadIdx.y + blockIdx.y * blockEdge;
@@ -87,8 +88,8 @@ __global__ void computeLBPs(byte *pixels, int_pair gaps_pixels, unsigned width, 
 	unsigned imageRow = row + gaps_pixels.y;
 	unsigned imageCol = col + gaps_pixels.x;
 
-	unsigned pattern = compareWithNeighborhood(pixels, gaps_pixels, width, imageRow, imageCol, samples, offsets);
 	float *histogram = getHistogram(histograms, row, col, histogramLength, blockEdge);
+	unsigned pattern = compareWithNeighborhood(pixels, gaps_pixels, width, imageRow, imageCol, samples, offsets);
 	atomicAdd(&histogram[pattern], 1.f);
 }
 
@@ -165,10 +166,10 @@ void LbpImageCuda::calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& r
 		numBlocks++;
 	}
 
-	// Ensume maximum grid size is respected
-	if(numBlocks > props.maxGridSize[0]) {
-		std::cerr << "Histograms are too big" << std::endl;
-		throw std::bad_alloc();
+	// Ensure max grid size is respected
+	if(numBlocks > props.maxGridSize[0])
+	{
+		throw std::invalid_argument("Too many samples/Image is too big");
 	}
 	grid = {(unsigned)numBlocks};
 	block = {(unsigned)props.maxThreadsPerBlock};
@@ -182,13 +183,15 @@ void LbpImageCuda::calcLbpGridAndBlockSize(dim3& grid, dim3& block)
 	cudaGetDeviceProperties(&props, device);
 
 	// Ensure maximum sizes are respected
-	if(blockEdge * blockEdge > props.maxThreadsPerBlock) {
-		std::cerr << "Maximum block edge on this device is " << std::sqrt(props.maxThreadsPerBlock) << std::endl;
-		throw std::invalid_argument("");
+	if(blockEdge * blockEdge > props.maxThreadsPerBlock)
+	{
+		auto error = "Maximum block edge on this device is " + std::to_string((unsigned)std::sqrt(props.maxThreadsPerBlock));
+		throw std::invalid_argument(error);
 	}
-	if(region.grid_size.x > props.maxGridSize[0] || region.grid_size.y > props.maxGridSize[1]) {
-		std::cerr << "Maximum grid size on this device is " << props.maxGridSize[0] << "x" << props.maxGridSize[1] << std::endl;
-		throw std::invalid_argument("");
+	if(region.grid_size.x > props.maxGridSize[0] || region.grid_size.y > props.maxGridSize[1])
+	{
+		auto error = "Maximum grid size on this device is " + std::to_string(props.maxGridSize[0]) + "x" + std::to_string(props.maxGridSize[1]);
+		throw std::invalid_argument(error);
 	}
 
 	// Same as CPU implementation

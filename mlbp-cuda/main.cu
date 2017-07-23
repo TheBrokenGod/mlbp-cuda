@@ -25,7 +25,12 @@ static void makeSampleOutput()
 {
 	LbpImageCpu output(pixels, width, height);
 	delete output.calculateNormalizedLBPs(1, 8, 64, "test-output");
-	std::cerr << "Visual LBPs representation saved" << std::endl;
+
+	float *histograms = output.calculateNormalizedLBPs(2, 4, 256);
+	LbpImageCpu::saveHistogramsToFile(histograms, output.getHistogramLength(), output.getNumberHistograms(), "test-output");
+
+	delete histograms;
+	std::cerr << "Visual and textual output saved" << std::endl;
 }
 
 
@@ -34,34 +39,40 @@ static void testAndBenchmark()
 	LbpImageCpu image(pixels, width, height);
 	LbpImageCuda d_Image(pixels, width, height);
 
-	int samp[] = {4, 6, 8, 10, 12, 15};
-	float rads[] = {1.0, 1.75, 1.0, 2.0, 3.0, 4.0};
-	int edge[] = {8, 10, 16, 16, 32, 32};
-	for(int i = 0; i < 6; i++)
+	int samp[] = {4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+	float rads[] = {1.0, 1.75, 1.0, 1.0, 2.0, 2.75, 3.0, 3.0, 4.0, 4.0, 4.0};
+	int edge[] = {10, 10, 16, 16, 16, 16, 32, 32, 32, 32, 32};
+	for(int i = 0; i < 11; i++)
 	{
-		Benchmark::start();
-		float *cpuHistograms = image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
-		Benchmark::stop();
-		long cpuMillis = Benchmark::getMillis();
+		try {
+			Benchmark::start();
+			float *cpuHistograms = image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
+			Benchmark::stop();
+			long cpuMillis = Benchmark::getMillis();
 
-		Benchmark::start();
-		float *gpuHistograms = d_Image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
-		Benchmark::stop();
-		long gpuMillis = Benchmark::getMillis();
+			Benchmark::start();
+			float *gpuHistograms = d_Image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
+			Benchmark::stop();
+			long gpuMillis = Benchmark::getMillis();
 
-		std::cerr << "With conf {r=" << rads[i] << ";s=" << samp[i] << ";e=" << edge[i] << "} ";
-		std::cerr << "CPU took " << cpuMillis << "ms and GPU " << gpuMillis << "ms";
+			std::cerr << "With conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} ";
+			std::cerr << "\tCPU took " << cpuMillis << "ms and GPU " << gpuMillis << "ms";
 
-		// Test against output correctness
-		long limit = image.getNumberHistograms() * image.getHistogramLength();
-		for(long j = 0; j < limit; j++)
-		{
-			if(cpuHistograms[j] != gpuHistograms[j]) {
-				throw std::logic_error("CPU and GPU outputs differ");
+			// Test against output correctness
+			long limit = image.getNumberHistograms() * image.getHistogramLength();
+			for(long j = 0; j < limit; j++)
+			{
+				if(cpuHistograms[j] != gpuHistograms[j]) {
+					throw std::logic_error("CPU and GPU outputs differ");
+				}
 			}
+			delete cpuHistograms, gpuHistograms;
+			std::cerr << "\tTest finished OK" << std::endl;
 		}
-		delete cpuHistograms, gpuHistograms;
-		std::cerr << " - Test finished OK" << std::endl;
+		catch(const std::bad_alloc& e) {
+			std::cerr << "Conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
+			return;
+		}
 	}
 }
 

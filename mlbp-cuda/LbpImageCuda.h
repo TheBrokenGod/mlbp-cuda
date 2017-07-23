@@ -3,12 +3,20 @@
 
 #include "AbstractLbpImage.h"
 
-class LbpImageCuda: public AbstractLbpImage
+class LbpImageCuda : public AbstractLbpImage
 {
 public:
+	/**
+	 * Build a new LbpImageCuda object
+	 *
+	 * The computation will be done on the default CUDA stream.
+	 */
 	LbpImageCuda(const std::vector<byte>& pixels, unsigned width, unsigned height);
-	~LbpImageCuda();
+	/**
+	 * See AbstractLbpImage::calculateNormalizedLBPs
+	 */
 	float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge);
+	~LbpImageCuda();
 
 private:
 	byte *d_pixels;

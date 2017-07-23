@@ -1,6 +1,8 @@
 #include "AbstractLbpImage.h"
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
+#include <iomanip>
 
 AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height) :
 	pixels(toGrayscale(pixels, width, height)),
@@ -51,8 +53,11 @@ void AbstractLbpImage::prepare(float radius, unsigned samples, unsigned blockEdg
 	if(!checkMinimumSize()) {
 		throw new std::invalid_argument("The image is too small");
 	}
+	// Def neighborhood
 	calcSamplingOffsets();
+	// Def net area
 	calcImageRegion();
+	// Alloc host mem
 	allocateHistograms();
 }
 
@@ -92,16 +97,6 @@ void AbstractLbpImage::calcImageRegion()
 	region.end_pixels.x = region.gaps_pixel.x + region.grid_size.x * blockEdge;
 }
 
-long AbstractLbpImage::getHistogramLength()
-{
-	return pow(2, samples);
-}
-
-long AbstractLbpImage::getNumberHistograms()
-{
-	return region.grid_size.x * region.grid_size.y;
-}
-
 void AbstractLbpImage::allocateHistograms()
 {
 	long size = getHistogramLength() * getNumberHistograms();
@@ -114,7 +109,36 @@ void AbstractLbpImage::allocateHistograms()
 	std::fill_n(histograms, size, 0.f);
 }
 
+long AbstractLbpImage::getNumberHistograms()
+{
+	return region.grid_size.x * region.grid_size.y;
+}
+
+long AbstractLbpImage::getHistogramLength()
+{
+	return pow(2, samples);
+}
+
 long AbstractLbpImage::getHistogramsSizeInBytes()
 {
 	return sizeof(float) * getHistogramLength() * getNumberHistograms();
+}
+
+void AbstractLbpImage::saveHistogramsToFile(float *histograms, long histogramLength, long numberHistograms, const std::string& filename)
+{
+	std::ofstream file(filename + ".lbp");
+	file << std::fixed << std::setprecision(3);
+
+	// Write histograms to text rows
+	for(int i = 0; i < numberHistograms; i++)
+	{
+		float *histogram = (histograms + i * histogramLength);
+		for(int j = 0; j < histogramLength; j++)
+		{
+			file << histogram[j]  << ' ';
+		}
+		file << '\n';
+	}
+
+	file.close();
 }
