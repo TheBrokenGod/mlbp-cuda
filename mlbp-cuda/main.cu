@@ -1,6 +1,7 @@
 #include <iostream>
 #include <bitset>
 #include <chrono>
+#include <stdexcept>
 #include "lodepng.h"
 #include "LbpImageCpu.h"
 #include "LbpImageCuda.h"
@@ -39,10 +40,10 @@ static void testAndBenchmark()
 	LbpImageCpu image(pixels, width, height);
 	LbpImageCuda d_Image(pixels, width, height);
 
-	int samp[] = {4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-	float rads[] = {1.0, 1.75, 1.0, 1.0, 2.0, 2.75, 3.0, 3.0, 4.0, 4.0, 4.0, 5.0};
-	int edge[] = {16, 16, 16, 16, 32, 32, 32, 32, 32, 32, 32, 32};
-	for(int i = 0; i < 12; i++)
+	int samp[] = {4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+	float rads[] = {1.0, 1.75, 1.0, 1.0, 2.0, 2.75, 3.0, 3.0, 4.0, 4.0, 4.0, 5.0, 5.0, 5.0, 6.0};
+	int edge[] = {16, 16, 16, 16, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32};
+	for(int i = 0; i < 15; i++)
 	{
 		try {
 			Benchmark::start();
@@ -63,13 +64,18 @@ static void testAndBenchmark()
 			for(long j = 0; j < limit; j++)
 			{
 				if(cpuHistograms[j] != gpuHistograms[j]) {
-					throw std::logic_error("CPU and GPU outputs differ");
+					throw std::logic_error("CPU and GPU outputs differ at " + std::to_string(j) + " " + std::to_string(cpuHistograms[j]) + " " + std::to_string(gpuHistograms[j]));
 				}
 			}
 			delete cpuHistograms, gpuHistograms;
 			std::cerr << "\tTest finished OK" << std::endl;
 		}
 		catch(const std::bad_alloc& e) {
+			std::cerr << "Conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
+			return;
+		}
+		catch(const std::invalid_argument& e) {
+			std::cerr << e.what() << std::endl;
 			std::cerr << "Conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
 			return;
 		}
@@ -86,5 +92,6 @@ int main(int argc, char **argv) {
 	}
 	makeSampleOutput();
 	testAndBenchmark();
+	cudaDeviceReset();
 	return 0;
 }

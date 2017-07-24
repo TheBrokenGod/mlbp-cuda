@@ -169,7 +169,7 @@ void LbpImageCuda::calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& r
 	// Ensure max grid size is respected
 	if(numBlocks > props.maxGridSize[0])
 	{
-		throw std::invalid_argument("Too many samples/Image is too big");
+		throw std::invalid_argument("maxGridSize is " + std::to_string(props.maxGridSize[0]) + " numBlocks is " + std::to_string(numBlocks));
 	}
 	grid = {(unsigned)numBlocks};
 	block = {(unsigned)props.maxThreadsPerBlock};
@@ -185,13 +185,11 @@ void LbpImageCuda::calcLbpGridAndBlockSize(dim3& grid, dim3& block)
 	// Ensure maximum sizes are respected
 	if(blockEdge * blockEdge > props.maxThreadsPerBlock)
 	{
-		auto error = "Maximum block edge on this device is " + std::to_string((unsigned)std::sqrt(props.maxThreadsPerBlock));
-		throw std::invalid_argument(error);
+		throw std::invalid_argument("Maximum block edge on this device is " + std::to_string((unsigned)std::sqrt(props.maxThreadsPerBlock)));
 	}
 	if(region.grid_size.x > props.maxGridSize[0] || region.grid_size.y > props.maxGridSize[1])
 	{
-		auto error = "Maximum grid size on this device is " + std::to_string(props.maxGridSize[0]) + "x" + std::to_string(props.maxGridSize[1]);
-		throw std::invalid_argument(error);
+		throw std::invalid_argument("Maximum grid size on this device is " + std::to_string(props.maxGridSize[0]) + "x" + std::to_string(props.maxGridSize[1]));
 	}
 
 	// Same as CPU implementation
