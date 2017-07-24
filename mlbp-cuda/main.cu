@@ -40,10 +40,10 @@ static void testAndBenchmark()
 	LbpImageCpu image(pixels, width, height);
 	LbpImageCuda d_Image(pixels, width, height);
 
-	int samp[] = {4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-	float rads[] = {1.0, 1.75, 1.0, 1.0, 2.0, 2.75, 3.0, 3.0, 4.0, 4.0, 4.0, 5.0, 5.0, 5.0, 6.0};
-	int edge[] = {16, 16, 16, 16, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32};
-	for(int i = 0; i < 15; i++)
+	int samp[] = {4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21};
+	float rads[] = {1.0, 1.75, 1.0, 1.0, 2.0, 2.75, 3.0, 3.0, 4.0, 4.0, 4.0, 5.0, 5.0, 5.0, 6.0, 6.0};
+	int edge[] = {16, 16, 16, 16, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32};
+	for(int i = 0; i < 16; i++)
 	{
 		try {
 			Benchmark::start();
