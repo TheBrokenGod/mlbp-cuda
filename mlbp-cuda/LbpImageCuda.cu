@@ -64,7 +64,7 @@ __device__ unsigned compareWithNeighborhood(byte *pixels, int_pair gaps_pixels, 
 		unsigned ncol = col + offsets[i].x;
 		byte neighbor = pixelAt(pixels, nrow, width, ncol);
 
-		if(pixel < neighbor) {
+		if(pixel <= neighbor) {
 			int shift = samples - 1 - i;
 			result = result | (0x1 << shift);
 		}
@@ -111,8 +111,7 @@ float *LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, uns
 	float *d_histograms;
 	cudaError_t error = cudaMalloc((void**)&d_histograms, getHistogramsSizeInBytes());
 	if(error) {
-		std::cerr << "cudaMalloc of " << getHistogramsSizeInBytes() << " bytes has failed" << std::endl;
-		throw std::bad_alloc();
+		throw std::invalid_argument("cudaMalloc of " + std::to_string(getHistogramsSizeInBytes()) + " bytes has failed");
 	}
 
 	// Calculate CUDA grids

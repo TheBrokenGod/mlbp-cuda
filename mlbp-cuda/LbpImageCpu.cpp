@@ -37,8 +37,8 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 		unsigned ncol = col + offsets[i].x;
 		byte neighbor = pixelAt(nrow, ncol);
 
-		// Write one if lower
-		if(pixel < neighbor) {
+		// Write one if LE
+		if(pixel <= neighbor) {
 			int shift = samples - 1 - i;
 			result = result | (0x1 << shift);
 		}

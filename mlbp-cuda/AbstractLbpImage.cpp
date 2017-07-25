@@ -104,7 +104,7 @@ void AbstractLbpImage::allocateHistograms()
 		histograms = new float[size];
 	}
 	catch(const std::bad_alloc& e) {
-		throw e;
+		throw std::invalid_argument("new float[" + std::to_string(size) + "] allocation failed");
 	}
 	std::fill_n(histograms, size, 0.f);
 }

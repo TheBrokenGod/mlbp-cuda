@@ -25,7 +25,7 @@ static bool loadImage(const std::string& filename)
 static void makeSampleOutput()
 {
 	LbpImageCpu output(pixels, width, height);
-	delete output.calculateNormalizedLBPs(1, 8, 64, "test-output");
+	delete output.calculateNormalizedLBPs(5, 8, 64, "test-output");
 
 	float *histograms = output.calculateNormalizedLBPs(2, 4, 256);
 	LbpImageCpu::saveHistogramsToFile(histograms, output.getHistogramLength(), output.getNumberHistograms(), "test-output");
@@ -70,13 +70,10 @@ static void testAndBenchmark()
 			delete cpuHistograms, gpuHistograms;
 			std::cerr << "\tTest finished OK" << std::endl;
 		}
-		catch(const std::bad_alloc& e) {
-			std::cerr << "Conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
-			return;
-		}
 		catch(const std::invalid_argument& e) {
 			std::cerr << e.what() << std::endl;
 			std::cerr << "Conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
+			std::cerr << "End" << std::endl;
 			return;
 		}
 	}
