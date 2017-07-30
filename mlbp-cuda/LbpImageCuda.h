@@ -2,6 +2,7 @@
 #define LBPIMAGECUDA_H_
 
 #include "AbstractLbpImage.h"
+#include "cuda.h"
 
 class LbpImageCuda : public AbstractLbpImage
 {
@@ -23,6 +24,7 @@ private:
 	int_pair *d_offsets;
 	void calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& remainder);
 	void calcLbpGridAndBlockSize(dim3& grid, dim3& block);
+	struct cudaDeviceProp getDeviceProps();
 };
 
 #endif

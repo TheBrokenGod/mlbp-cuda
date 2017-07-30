@@ -56,7 +56,7 @@ static void testAndBenchmark()
 			Benchmark::stop();
 			long gpuMillis = Benchmark::getMillis();
 
-			std::cerr << "With conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} ";
+			std::cerr << "With conf {s=" << samp[i] << "; r=" << rads[i] << "; e=" << edge[i] << "} ";
 			std::cerr << "\tCPU took " << cpuMillis << "ms and GPU " << gpuMillis << "ms";
 
 			// Test against output correctness
@@ -72,8 +72,8 @@ static void testAndBenchmark()
 		}
 		catch(const std::invalid_argument& e) {
 			std::cerr << e.what() << std::endl;
-			std::cerr << "Conf {r=" << rads[i] << "; s=" << samp[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
-			std::cerr << "End" << std::endl;
+			std::cerr << "Conf {s=" << samp[i] << "; r=" << rads[i] << "; e=" << edge[i] << "} is not supported" << std::endl;
+			std::cerr << "End of main" << std::endl;
 			return;
 		}
 	}

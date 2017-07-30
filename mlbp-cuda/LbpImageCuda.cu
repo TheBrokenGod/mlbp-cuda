@@ -1,5 +1,4 @@
 #include "LbpImageCuda.h"
-#include "cuda.h"
 #include "cuda_runtime.h"
 #include <iostream>
 #include <stdexcept>
@@ -152,12 +151,8 @@ float *LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, uns
 
 void LbpImageCuda::calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& remainder)
 {
-	int device;
-	cudaGetDevice(&device);
-	struct cudaDeviceProp props;
-	cudaGetDeviceProperties(&props, device);
-
 	// Histograms will be covered by maximum-sized blocks
+	auto props = getDeviceProps();
 	auto numFloats = getHistogramsSizeInBytes() / sizeof(float);
 	auto numBlocks = numFloats / props.maxThreadsPerBlock;
 	remainder = numFloats % props.maxThreadsPerBlock;
@@ -176,12 +171,8 @@ void LbpImageCuda::calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& r
 
 void LbpImageCuda::calcLbpGridAndBlockSize(dim3& grid, dim3& block)
 {
-	int device;
-	cudaGetDevice(&device);
-	struct cudaDeviceProp props;
-	cudaGetDeviceProperties(&props, device);
-
 	// Ensure maximum sizes are respected
+	auto props = getDeviceProps();
 	if(blockEdge * blockEdge > props.maxThreadsPerBlock)
 	{
 		throw std::invalid_argument("Maximum block edge on this device is " + std::to_string((unsigned)std::sqrt(props.maxThreadsPerBlock)));
@@ -194,4 +185,12 @@ void LbpImageCuda::calcLbpGridAndBlockSize(dim3& grid, dim3& block)
 	// Same as CPU implementation
 	grid = {(unsigned)region.grid_size.x, (unsigned)region.grid_size.y};
 	block = {blockEdge, blockEdge};
+}
+
+struct cudaDeviceProp LbpImageCuda::getDeviceProps() {
+	int device;
+	cudaGetDevice(&device);
+	struct cudaDeviceProp props;
+	cudaGetDeviceProperties(&props, device);
+	return props;
 }
