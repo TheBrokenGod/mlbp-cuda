@@ -109,12 +109,17 @@ void AbstractLbpImage::allocateHistograms()
 	std::fill_n(histograms, size, 0.f);
 }
 
-long AbstractLbpImage::getNumberHistograms()
+long AbstractLbpImage::getNumberHistograms() const
 {
 	return region.grid_size.x * region.grid_size.y;
 }
 
-long AbstractLbpImage::getHistogramLength()
+int_pair AbstractLbpImage::getGridSize() const
+{
+	return region.grid_size;
+}
+
+long AbstractLbpImage::getHistogramLength() const
 {
 	return pow(2, samples);
 }

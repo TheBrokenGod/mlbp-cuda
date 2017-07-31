@@ -17,13 +17,17 @@ public:
 	 */
 	virtual float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge) = 0;
 	/**
-	 * Return the number of floats in one histogram
+	 * Return the number of floats in one histogram.
 	 */
-	long getHistogramLength();
+	long getHistogramLength() const;
+	/**
+	 * Return the dimension of the grid in x (columns) and y (rows) blocks
+	 */
+	int_pair getGridSize() const;
 	/**
 	 * Return the number of histograms which is grid.x * grid.y
 	 */
-	long getNumberHistograms();
+	long getNumberHistograms() const;
 	/**
 	 * Save the histograms to a text file; one histogram per row.
 	 */
