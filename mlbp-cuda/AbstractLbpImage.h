@@ -17,7 +17,7 @@ public:
 	 */
 	virtual float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge) = 0;
 	/**
-	 * Return the number of floats in one histogram.
+	 * Return the number of floats in one histogram
 	 */
 	long getHistogramLength() const;
 	/**
@@ -29,7 +29,7 @@ public:
 	 */
 	long getNumberHistograms() const;
 	/**
-	 * Save the histograms to a text file; one histogram per row.
+	 * Save the histograms to a text file; one histogram per row
 	 */
 	static void saveHistogramsToFile(float *histograms, long histLength, long numHists, const std::string& filename);
 
