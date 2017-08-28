@@ -25,12 +25,11 @@ static bool loadImage(const std::string& filename)
 static void makeSampleOutput()
 {
 	LbpImageCpu output(pixels, width, height);
-	delete output.calculateNormalizedLBPs(5, 8, 64, "test-output");
+	output.calculateNormalizedLBPs(5, 8, 64, "test-output");
 
-	float *histograms = output.calculateNormalizedLBPs(2, 4, 256);
+	auto histograms = output.calculateNormalizedLBPs(2, 4, 256);
 	LbpImageCpu::saveHistogramsToFile(histograms, output.getHistogramLength(), output.getNumberHistograms(), "test-output");
 
-	delete histograms;
 	std::cerr << "Visual and textual output saved" << std::endl;
 }
 
@@ -47,12 +46,12 @@ static void testAndBenchmark()
 	{
 		try {
 			Benchmark::start();
-			float *cpuHistograms = image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
+			auto cpuHistograms = image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
 			Benchmark::stop();
 			long cpuMillis = Benchmark::getMillis();
 
 			Benchmark::start();
-			float *gpuHistograms = d_Image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
+			auto gpuHistograms = d_Image.calculateNormalizedLBPs(rads[i], samp[i], edge[i]);
 			Benchmark::stop();
 			long gpuMillis = Benchmark::getMillis();
 
@@ -67,7 +66,6 @@ static void testAndBenchmark()
 					throw std::logic_error("CPU and GPU outputs differ at " + std::to_string(j) + " " + std::to_string(cpuHistograms[j]) + " " + std::to_string(gpuHistograms[j]));
 				}
 			}
-			delete cpuHistograms, gpuHistograms;
 			std::cerr << "\tTest finished OK" << std::endl;
 		}
 		catch(const std::invalid_argument& e) {

@@ -10,8 +10,7 @@ AbstractLbpImage::AbstractLbpImage(const std::vector<byte>& pixels, unsigned wid
 	height(height),
 	radius(0.f),
 	samples(0),
-	blockEdge(0),
-	histograms(nullptr) {
+	blockEdge(0) {
 }
 
 AbstractLbpImage::~AbstractLbpImage() {
@@ -101,12 +100,11 @@ void AbstractLbpImage::allocateHistograms()
 {
 	long size = getHistogramLength() * getNumberHistograms();
 	try {
-		histograms = new float[size];
+		histograms = std::vector<float>(size, 0.f);
 	}
 	catch(const std::bad_alloc& e) {
-		throw std::invalid_argument("new float[" + std::to_string(size) + "] allocation failed");
+		throw std::invalid_argument("std::vector<float>(" + std::to_string(size) + ", 0.f) failed");
 	}
-	std::fill_n(histograms, size, 0.f);
 }
 
 long AbstractLbpImage::getNumberHistograms() const
@@ -129,7 +127,7 @@ long AbstractLbpImage::getHistogramsSizeInBytes()
 	return sizeof(float) * getHistogramLength() * getNumberHistograms();
 }
 
-void AbstractLbpImage::saveHistogramsToFile(float *histograms, long histogramLength, long numberHistograms, const std::string& filename)
+void AbstractLbpImage::saveHistogramsToFile(std::vector<float> histograms, long histogramLength, long numberHistograms, const std::string& filename)
 {
 	std::ofstream file(filename + ".lbp");
 	file << std::fixed << std::setprecision(3);
@@ -137,7 +135,7 @@ void AbstractLbpImage::saveHistogramsToFile(float *histograms, long histogramLen
 	// Write histograms to text rows
 	for(int i = 0; i < numberHistograms; i++)
 	{
-		float *histogram = (histograms + i * histogramLength);
+		float *histogram = (histograms.data() + i * histogramLength);
 		for(int j = 0; j < histogramLength; j++)
 		{
 			file << histogram[j]  << ' ';

@@ -6,6 +6,7 @@
 class LbpImageCpu : public AbstractLbpImage
 {
 public:
+	~LbpImageCpu();
 	/**
 	 * Build a new LbpImageCpu object
 	 *
@@ -17,12 +18,11 @@ public:
 	 *
 	 * An image representing the local binary patterns will be saved
 	 */
-	float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, const std::string& outputImageName);
+	std::vector<float> calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, const std::string& outputImageName);
 	/**
 	 * See AbstractLbpImage::calculateNormalizedLBPs
 	 */
-	float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge);
-	~LbpImageCpu();
+	std::vector<float> calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge);
 
 private:
 	byte pixelAt(unsigned row, unsigned col);

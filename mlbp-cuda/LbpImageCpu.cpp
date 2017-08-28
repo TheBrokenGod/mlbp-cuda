@@ -47,12 +47,12 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 	return result;
 }
 
-float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge)
+std::vector<float> LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge)
 {
 	return calculateNormalizedLBPs(radius, samples, blockEdge, "");
 }
 
-float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, const std::string& outputImageName)
+std::vector<float> LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, const std::string& outputImageName)
 {
 	prepare(radius, samples, blockEdge);
 	// Reserve for image output
@@ -71,7 +71,7 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsi
 		for(int j = region.gaps_pixel.x; j < region.end_pixels.x; j++)
 		{
 			// Get pointer to block's histogram
-			float *histogram = getHistogram(histograms, i, j);
+			float *histogram = getHistogram(histograms.data(), i, j);
 			// Pixel's LBP will become array index
 			unsigned pattern = compareWithNeighborhood(i, j);
 			// Increment entry
@@ -96,5 +96,5 @@ float *LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsi
 		lodepng::encode(outputImageName + ".png", output, outputWidth, outputHeight, LCT_GREY);
 	}
 
-	return histograms;
+	return std::move(histograms);
 }

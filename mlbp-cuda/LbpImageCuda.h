@@ -7,6 +7,7 @@
 class LbpImageCuda : public AbstractLbpImage
 {
 public:
+	~LbpImageCuda();
 	/**
 	 * Build a new LbpImageCuda object
 	 *
@@ -16,8 +17,7 @@ public:
 	/**
 	 * See AbstractLbpImage::calculateNormalizedLBPs
 	 */
-	float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge);
-	~LbpImageCuda();
+	std::vector<float> calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge);
 
 private:
 	byte *d_pixels;

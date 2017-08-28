@@ -100,7 +100,7 @@ __global__ void normalizeHistograms(float *histograms, float divider, unsigned l
 	histograms[getGlobalIndex()] /= divider;
 }
 
-float *LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge)
+std::vector<float> LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge)
 {
 	prepare(radius, samples, blockEdge);
 	cudaMalloc((void**)&d_offsets, sizeof(int_pair) * offsets.size());
@@ -143,10 +143,10 @@ float *LbpImageCuda::calculateNormalizedLBPs(float radius, unsigned samples, uns
 	);
 
 	// Copy result and return
-	cudaMemcpy(histograms, d_histograms, getHistogramsSizeInBytes(), cudaMemcpyDeviceToHost);
+	cudaMemcpy(histograms.data(), d_histograms, getHistogramsSizeInBytes(), cudaMemcpyDeviceToHost);
 	cudaFree((void*)d_offsets);
 	cudaFree((void*)d_histograms);
-	return histograms;
+	return std::move(histograms);
 }
 
 void LbpImageCuda::calcHistGridAndBlockSize(dim3& grid, dim3& block, unsigned& remainder)

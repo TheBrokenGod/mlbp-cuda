@@ -12,16 +12,16 @@ public:
 	virtual ~AbstractLbpImage();
 	/**
 	 * Perform the LBP computation
-	 *
-	 * The returned array should be deleted with 'delete []' by the caller.
 	 */
-	virtual float *calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge) = 0;
+	virtual std::vector<float> calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge) = 0;
 	/**
 	 * Return the number of floats in one histogram
 	 */
 	long getHistogramLength() const;
 	/**
 	 * Return the dimension of the grid in x (columns) and y (rows) blocks
+	 *
+	 * Each block has its own histogram
 	 */
 	int_pair getGridSize() const;
 	/**
@@ -31,7 +31,7 @@ public:
 	/**
 	 * Save the histograms to a text file; one histogram per row
 	 */
-	static void saveHistogramsToFile(float *histograms, long histLength, long numHists, const std::string& filename);
+	static void saveHistogramsToFile(std::vector<float> histograms, long histLength, long numHists, const std::string& filename);
 
 protected:
 	std::vector<byte> pixels;
@@ -41,7 +41,7 @@ protected:
 	unsigned blockEdge;
 	image_region region;
 	std::vector<int_pair> offsets;
-	float *histograms;
+	std::vector<float> histograms;
 
 protected:
 	AbstractLbpImage(const std::vector<byte>& pixels, unsigned width, unsigned height);
