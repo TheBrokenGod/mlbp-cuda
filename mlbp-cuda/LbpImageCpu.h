@@ -18,7 +18,8 @@ public:
 	 *
 	 * An image representing the local binary patterns will be saved
 	 */
-	std::vector<float> calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, const std::string& outputImageName);
+	std::vector<float> calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge,
+			std::vector<byte> *outputImage, unsigned *outputWidth, unsigned *outputHeight);
 	/**
 	 * See AbstractLbpImage::calculateNormalizedLBPs
 	 */

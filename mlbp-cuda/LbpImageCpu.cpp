@@ -1,7 +1,6 @@
 #include "LbpImageCpu.h"
 #include <iostream>
 #include <stdexcept>
-#include "lodepng.h"
 
 LbpImageCpu::LbpImageCpu(const std::vector<byte>& pixels, unsigned width, unsigned height) :
 	AbstractLbpImage(pixels, width, height) {
@@ -49,20 +48,17 @@ unsigned LbpImageCpu::compareWithNeighborhood(unsigned row, unsigned col)
 
 std::vector<float> LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge)
 {
-	return calculateNormalizedLBPs(radius, samples, blockEdge, "");
+	return calculateNormalizedLBPs(radius, samples, blockEdge, nullptr, nullptr, nullptr);
 }
 
-std::vector<float> LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, const std::string& outputImageName)
+std::vector<float> LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned samples, unsigned blockEdge, std::vector<byte> *outputImage, unsigned *outputWidth, unsigned *outputHeight)
 {
 	prepare(radius, samples, blockEdge);
-	// Reserve for image output
-	std::vector<byte> output;
-	unsigned outputWidth;
-	unsigned outputHeight;
-	if(outputImageName.size() > 0) {
-		outputWidth = region.grid_size.x * blockEdge;
-		outputHeight = region.grid_size.y * blockEdge;
-		output.reserve(outputWidth * outputHeight);
+	if(outputImage != nullptr) {
+		outputImage->clear();
+		*outputWidth = region.grid_size.x * blockEdge;
+		*outputHeight = region.grid_size.y * blockEdge;
+		outputImage->reserve(*outputWidth * *outputHeight);
 	}
 
 	// Calculate for net area
@@ -76,25 +72,19 @@ std::vector<float> LbpImageCpu::calculateNormalizedLBPs(float radius, unsigned s
 			unsigned pattern = compareWithNeighborhood(i, j);
 			// Increment entry
 			histogram[pattern] += 1;
-
-			if(outputImageName.size() > 0) {
+			// Save representation
+			if(outputImage != nullptr) {
 				float check = pattern / powf(2.f, samples - 8.f);
-				output.push_back((byte)roundf(check));
+				outputImage->push_back((byte)roundf(check));
 			}
 		}
 	}
-
-	// Normalize to 1
+	// Normalize to one
 	int size = getHistogramLength() * getNumberHistograms();
 	for(int i = 0; i < size; i++)
 	{
 		histograms[i] /= (blockEdge * blockEdge);
 	}
-
-	// Save check image
-	if(outputImageName.size() > 0) {
-		lodepng::encode(outputImageName + ".png", output, outputWidth, outputHeight, LCT_GREY);
-	}
-
+	// Free internal memory
 	return std::move(histograms);
 }

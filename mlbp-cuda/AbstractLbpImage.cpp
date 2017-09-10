@@ -129,7 +129,7 @@ long AbstractLbpImage::getHistogramsSizeInBytes()
 
 void AbstractLbpImage::saveHistogramsToFile(std::vector<float> histograms, long histogramLength, long numberHistograms, const std::string& filename)
 {
-	std::ofstream file(filename + ".lbp");
+	std::ofstream file(filename);
 	file << std::fixed << std::setprecision(3);
 
 	// Write histograms to text rows

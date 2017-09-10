@@ -25,11 +25,16 @@ static bool loadImage(const std::string& filename)
 static void makeSampleOutput()
 {
 	LbpImageCpu output(pixels, width, height);
-	output.calculateNormalizedLBPs(5, 8, 64, "test-output");
 
+	// Save check image
+	std::vector<byte> outputImage;
+	unsigned outputWidth, outputHeight;
+	output.calculateNormalizedLBPs(5, 8, 64, &outputImage, &outputWidth, &outputHeight);
+	lodepng::encode("test-output.png", outputImage, outputWidth, outputHeight, LCT_GREY);
+
+	// Save text histograms
 	auto histograms = output.calculateNormalizedLBPs(2, 4, 256);
-	LbpImageCpu::saveHistogramsToFile(histograms, output.getHistogramLength(), output.getNumberHistograms(), "test-output");
-
+	LbpImageCpu::saveHistogramsToFile(histograms, output.getHistogramLength(), output.getNumberHistograms(), "test-output.lbp");
 	std::cerr << "Visual and textual output saved" << std::endl;
 }
 
